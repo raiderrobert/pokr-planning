@@ -401,10 +401,10 @@ main { max-width:900px; margin:0 auto; padding:1.5rem 1.25rem 8rem; }
   background:var(--border); color:var(--text2); font-size:1.1rem;
 }
 .p-card .flip-front.voted {
-  background:var(--primary); color:#fff;
+  color:#fff;
 }
 .p-card .flip-back {
-  background:var(--primary); color:#fff; font-size:1.4rem;
+  color:#fff; font-size:1.4rem;
   transform:rotateY(180deg);
 }
 .p-card .p-name {
@@ -689,12 +689,14 @@ function render() {
     const observerClass = p.observer ? "observer" : "";
     const displayValue = roomState.revealed && p.voted ? p.value : "";
     const frontSymbol = p.observer ? "👁" : (p.voted ? "✓" : "·");
+    const color = hashColor(p.id);
+    const cardStyle = p.observer ? '' : \`--card-color:\${color}\`;
     return \`
-      <div class="p-card \${revealedClass} \${observerClass}">
+      <div class="p-card \${revealedClass} \${observerClass}" style="\${cardStyle}">
         <div class="flip-card">
           <div class="flip-inner">
-            <div class="flip-front \${votedClass}">\${frontSymbol}</div>
-            <div class="flip-back">\${displayValue}</div>
+            <div class="flip-front \${votedClass}" style="\${p.voted && !p.observer ? 'background:' + color : ''}">\${frontSymbol}</div>
+            <div class="flip-back" style="background:\${color}">\${displayValue}</div>
           </div>
         </div>
         <div class="p-name">\${esc(p.name)}\${isMe ? " (you)" : ""}</div>
@@ -766,6 +768,16 @@ function renderDock() {
     const dis = disabled ? "disabled" : "";
     return \`<div class="vote-card \${sel} \${dis}" onclick="vote('\${v}')">\${v}</div>\`;
   }).join("");
+}
+
+function hashColor(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = str.charCodeAt(i) + ((h << 5) - h);
+    h = h & h; // 32-bit int
+  }
+  const hue = ((h % 360) + 360) % 360;
+  return \`hsl(\${hue}, 55%, 50%)\`;
 }
 
 function esc(s) {
