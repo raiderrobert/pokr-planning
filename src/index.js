@@ -404,7 +404,8 @@ main { max-width:900px; margin:0 auto; padding:1.5rem 1.25rem 8rem; }
   color:#fff;
 }
 .p-card .flip-back {
-  color:#fff; font-size:1.4rem;
+  background:var(--surface); font-size:1.4rem;
+  border:3px solid currentColor;
   transform:rotateY(180deg);
 }
 .p-card .p-name {
@@ -696,7 +697,7 @@ function render() {
         <div class="flip-card">
           <div class="flip-inner">
             <div class="flip-front \${votedClass}" style="\${p.voted && !p.observer ? 'background:' + color : ''}">\${frontSymbol}</div>
-            <div class="flip-back" style="background:\${color}">\${displayValue}</div>
+            <div class="flip-back" style="color:\${color}">\${displayValue}</div>
           </div>
         </div>
         <div class="p-name">\${esc(p.name)}\${isMe ? " (you)" : ""}</div>
