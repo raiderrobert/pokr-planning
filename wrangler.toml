@@ -1,0 +1,12 @@
+name = "pokr-planning"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+
+[durable_objects]
+bindings = [
+  { name = "PLANNING_ROOM", class_name = "PlanningRoom" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["PlanningRoom"]
