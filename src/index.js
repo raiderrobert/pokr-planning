@@ -421,9 +421,10 @@ main { max-width:900px; margin:0 auto; padding:1.5rem 1.25rem 8rem; }
   50% { box-shadow:0 0 0 8px rgba(99,102,241,0); }
 }
 .btn-reset {
-  background:var(--bg); color:var(--text2); border:1px solid var(--border);
+  background:var(--primary); color:#fff; border:2px solid var(--primary);
+  font-size:1rem; padding:.75rem 2rem;
 }
-.btn-reset:hover { background:var(--border); }
+.btn-reset:hover { background:var(--primary-h); border-color:var(--primary-h); }
 
 /* --- Voting Dock --- */
 .dock {
@@ -693,7 +694,7 @@ function render() {
   // Action buttons
   const actionsEl = document.getElementById("actions");
   if (roomState.revealed) {
-    actionsEl.innerHTML = '<button class="btn-reset" onclick="reset()">New Round</button>';
+    actionsEl.innerHTML = '<button class="btn-reset" onclick="reset()">🔄 New Round</button>';
   } else {
     const allVoted = people.length > 0 && people.every(p => p.voted);
     actionsEl.innerHTML = \`
