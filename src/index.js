@@ -315,6 +315,12 @@ header {
 header .logo { font-weight:700; font-size:1.15rem; }
 header .logo span { color:var(--primary); }
 .room-info { display:flex; align-items:center; gap:.5rem; }
+.new-room-btn {
+  background:none; border:1px solid var(--border); border-radius:6px;
+  padding:.3rem .6rem; cursor:pointer; font-size:.8rem; color:var(--text2);
+  text-decoration:none; font-weight:500; transition:all .15s;
+}
+.new-room-btn:hover { border-color:var(--primary); color:var(--primary); }
 .room-code {
   background:var(--bg); padding:.3rem .65rem; border-radius:6px;
   font-family:"SF Mono",ui-monospace,monospace; font-size:.85rem;
@@ -492,6 +498,7 @@ ${Array.from({ length: 20 }, (_, i) =>
   <div class="room-info">
     <span class="room-code" id="roomCode">${roomId}</span>
     <button class="copy-btn" onclick="copyLink(this)">Copy link</button>
+    <a class="new-room-btn" href="/">+ New Room</a>
   </div>
 </header>
 
