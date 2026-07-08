@@ -25,7 +25,7 @@ export class PlanningRoom {
     const [client, server] = Object.values(pair);
 
     this.state.acceptWebSocket(server, [pid]);
-    server.serializeAttachment({ id: pid, name: null, vote: null });
+    server.serializeAttachment({ id: pid, name: null, vote: null, observer: false });
 
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -57,6 +57,13 @@ export class PlanningRoom {
 
       case "unvote": {
         att.vote = null;
+        ws.serializeAttachment(att);
+        break;
+      }
+
+      case "observer": {
+        att.observer = !!data.value;
+        if (att.observer) att.vote = null;
         ws.serializeAttachment(att);
         break;
       }
@@ -115,6 +122,7 @@ export class PlanningRoom {
         name: a.name,
         voted: a.vote !== null,
         value: revealed ? a.vote : null,
+        observer: !!a.observer,
       });
     }
 
@@ -321,6 +329,13 @@ header .logo span { color:var(--primary); }
   text-decoration:none; font-weight:500; transition:all .15s;
 }
 .new-room-btn:hover { border-color:var(--primary); color:var(--primary); }
+.observer-toggle {
+  background:none; border:1px solid var(--border); border-radius:6px;
+  padding:.3rem .6rem; cursor:pointer; font-size:.8rem; color:var(--text2);
+  font-weight:500; transition:all .15s;
+}
+.observer-toggle:hover { border-color:var(--primary); color:var(--primary); }
+.observer-toggle.active { background:var(--primary); color:#fff; border-color:var(--primary); }
 .room-code {
   background:var(--bg); padding:.3rem .65rem; border-radius:6px;
   font-family:"SF Mono",ui-monospace,monospace; font-size:.85rem;
@@ -395,6 +410,11 @@ main { max-width:900px; margin:0 auto; padding:1.5rem 1.25rem 8rem; }
 .p-card .p-name {
   font-size:.85rem; font-weight:500; color:var(--text);
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.p-card.observer { opacity:.6; }
+.p-card.observer .flip-front { background:transparent; border:2px dashed var(--border); color:var(--text2); }
+.p-card .p-role {
+  font-size:.7rem; color:var(--text2); margin-top:.15rem;
 }
 
 /* --- Stats Bar --- */
@@ -499,6 +519,7 @@ ${Array.from({ length: 20 }, (_, i) =>
     <span class="room-code" id="roomCode">${roomId}</span>
     <button class="copy-btn" onclick="copyLink(this)">Copy link</button>
     <a class="new-room-btn" href="/">+ New Room</a>
+    <button class="observer-toggle" id="observerToggle" onclick="toggleObserver()">👁 Observer</button>
   </div>
 </header>
 
@@ -528,6 +549,7 @@ let myPid = localStorage.getItem("pokr-pid");
 if (!myPid) { myPid = crypto.randomUUID(); localStorage.setItem("pokr-pid", myPid); }
 let myName = localStorage.getItem("pokr-name") || "";
 let selectedVote = null;
+let isObserver = localStorage.getItem("pokr-observer") === "true";
 let roomState = null;
 let reconnectDelay = 500;
 let topicTimer = null;
@@ -559,7 +581,8 @@ function connect() {
     reconnectDelay = 500;
     showConn(true);
     ws.send(JSON.stringify({ type: "join", name: myName }));
-    if (selectedVote !== null) {
+    ws.send(JSON.stringify({ type: "observer", value: isObserver }));
+    if (!isObserver && selectedVote !== null) {
       ws.send(JSON.stringify({ type: "vote", value: selectedVote }));
     }
   };
@@ -589,8 +612,24 @@ function showConn(ok) {
   else el.style.opacity = "1";
 }
 
+// ---- Observer toggle ----
+function toggleObserver() {
+  isObserver = !isObserver;
+  localStorage.setItem("pokr-observer", isObserver);
+  if (isObserver) { selectedVote = null; }
+  ws.send(JSON.stringify({ type: "observer", value: isObserver }));
+  updateObserverBtn();
+}
+
+function updateObserverBtn() {
+  const btn = document.getElementById("observerToggle");
+  btn.classList.toggle("active", isObserver);
+  btn.textContent = isObserver ? "👁 Observer (on)" : "👁 Observer";
+}
+
 // ---- Voting ----
 function vote(value) {
+  if (isObserver) return;
   if (roomState && roomState.revealed) return;
   if (selectedVote === value) {
     // Deselect
@@ -645,12 +684,13 @@ function render() {
 
   container.innerHTML = people.map(p => {
     const isMe = p.id === myPid;
-    const revealedClass = roomState.revealed ? "revealed" : "";
+    const revealedClass = roomState.revealed && !p.observer ? "revealed" : "";
     const votedClass = p.voted ? "voted" : "";
+    const observerClass = p.observer ? "observer" : "";
     const displayValue = roomState.revealed && p.voted ? p.value : "";
-    const frontSymbol = p.voted ? "✓" : "·";
+    const frontSymbol = p.observer ? "👁" : (p.voted ? "✓" : "·");
     return \`
-      <div class="p-card \${revealedClass}">
+      <div class="p-card \${revealedClass} \${observerClass}">
         <div class="flip-card">
           <div class="flip-inner">
             <div class="flip-front \${votedClass}">\${frontSymbol}</div>
@@ -658,14 +698,18 @@ function render() {
           </div>
         </div>
         <div class="p-name">\${esc(p.name)}\${isMe ? " (you)" : ""}</div>
+        \${p.observer ? '<div class="p-role">observer</div>' : ''}
       </div>
     \`;
   }).join("");
 
   // Label
-  const voteCount = people.filter(p => p.voted).length;
+  const voters = people.filter(p => !p.observer);
+  const voteCount = voters.filter(p => p.voted).length;
+  const observerCount = people.filter(p => p.observer).length;
+  const obsLabel = observerCount > 0 ? \` · \${observerCount} observing\` : "";
   document.getElementById("pLabel").textContent =
-    \`PARTICIPANTS — \${voteCount}/\${people.length} voted\`;
+    \`PARTICIPANTS — \${voteCount}/\${voters.length} voted\${obsLabel}\`;
 
   // Stats (only when revealed)
   const statsEl = document.getElementById("stats");
@@ -703,7 +747,7 @@ function render() {
   if (roomState.revealed) {
     actionsEl.innerHTML = '<button class="btn-reset" onclick="reset()">🔄 New Round</button>';
   } else {
-    const allVoted = people.length > 0 && people.every(p => p.voted);
+    const allVoted = voters.length > 0 && voters.every(p => p.voted);
     actionsEl.innerHTML = \`
       <button class="btn-reveal \${allVoted ? 'ready' : ''}" onclick="reveal()">
         Reveal Votes
@@ -715,7 +759,7 @@ function render() {
 }
 
 function renderDock() {
-  const disabled = roomState && roomState.revealed;
+  const disabled = isObserver || (roomState && roomState.revealed);
   const dock = document.getElementById("voteDock");
   dock.innerHTML = CARD_VALUES.map(v => {
     const sel = selectedVote === v ? "selected" : "";
@@ -731,6 +775,7 @@ function esc(s) {
 }
 
 // ---- Boot ----
+updateObserverBtn();
 if (myName) connect();
 renderDock();
 </script>
