@@ -398,10 +398,11 @@ main { max-width:900px; margin:0 auto; padding:1.5rem 1.25rem 8rem; }
   backface-visibility:hidden; font-weight:700;
 }
 .p-card .flip-front {
-  background:var(--border); color:var(--text2); font-size:1.1rem;
+  background:var(--surface); font-size:1.1rem;
+  border:3px solid currentColor;
 }
 .p-card .flip-front.voted {
-  color:#fff;
+  color:#fff; border-color:transparent;
 }
 .p-card .flip-back {
   background:var(--surface); font-size:1.4rem;
@@ -696,7 +697,7 @@ function render() {
       <div class="p-card \${revealedClass} \${observerClass}" style="\${cardStyle}">
         <div class="flip-card">
           <div class="flip-inner">
-            <div class="flip-front \${votedClass}" style="\${p.voted && !p.observer ? 'background:' + color : ''}">\${frontSymbol}</div>
+            <div class="flip-front \${votedClass}" style="\${p.observer ? '' : p.voted ? 'background:' + color : 'color:' + color}">\${frontSymbol}</div>
             <div class="flip-back" style="color:\${color}">\${displayValue}</div>
           </div>
         </div>
