@@ -443,8 +443,8 @@ main { max-width:900px; margin:0 auto; padding:1.5rem 1.25rem 8rem; }
 .btn-reveal:hover { background:var(--primary-h); }
 .btn-reveal.ready { animation:pulse 1.5s infinite; }
 @keyframes pulse {
-  0%,100% { box-shadow:0 0 0 0 rgba(99,102,241,.4); }
-  50% { box-shadow:0 0 0 8px rgba(99,102,241,0); }
+  0%,100% { box-shadow:0 0 0 0 rgba(34,197,94,.4); }
+  50% { box-shadow:0 0 0 8px rgba(34,197,94,0); }
 }
 .btn-reset {
   background:var(--primary); color:#fff; border:2px solid var(--primary);
@@ -478,7 +478,7 @@ main { max-width:900px; margin:0 auto; padding:1.5rem 1.25rem 8rem; }
 .vote-card.selected {
   background:var(--primary); color:#fff; border-color:var(--primary);
   transform:translateY(-6px);
-  box-shadow:0 4px 12px rgba(99,102,241,.35);
+  box-shadow:0 4px 12px rgba(34,197,94,.35);
 }
 .vote-card.disabled {
   opacity:.4; pointer-events:none;
@@ -790,8 +790,8 @@ renderDock();
 const SHARED_STYLES = `
 *,*::before,*::after { box-sizing:border-box; }
 :root {
-  --bg:#f5f5f7; --surface:#ffffff; --primary:#6366f1;
-  --primary-h:#4f46e5; --text:#1e1b4b; --text2:#6b7280;
+  --bg:#f5f5f7; --surface:#ffffff; --primary:#22c55e;
+  --primary-h:#16a34a; --text:#1a1a1a; --text2:#6b7280;
   --border:#e5e7eb; --green:#10b981;
   --shadow:0 1px 3px rgba(0,0,0,.08);
   --r:10px; --r2:16px;
